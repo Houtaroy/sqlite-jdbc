@@ -21,6 +21,10 @@ public class JDBC4PreparedStatement extends JDBC3PreparedStatement
         return sql + " \n parameters=" + Arrays.toString(batch);
     }
 
+    public JDBC4PreparedStatement(SQLiteConnection connection) {
+        super(connection);
+    }
+
     public JDBC4PreparedStatement(SQLiteConnection conn, String sql) throws SQLException {
         super(conn, sql);
     }

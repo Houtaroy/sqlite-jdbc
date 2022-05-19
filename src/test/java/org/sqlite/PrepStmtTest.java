@@ -1,12 +1,8 @@
 package org.sqlite;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -18,14 +14,23 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-/** These tests are designed to stress PreparedStatements on memory dbs. */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+/**
+ * These tests are designed to stress PreparedStatements on memory dbs.
+ */
 public class PrepStmtTest {
-    static byte[] b1 = new byte[] {1, 2, 7, 4, 2, 6, 2, 8, 5, 2, 3, 1, 5, 3, 6, 3, 3, 6, 2, 5};
+    static byte[] b1 = new byte[]{1, 2, 7, 4, 2, 6, 2, 8, 5, 2, 3, 1, 5, 3, 6, 3, 3, 6, 2, 5};
     static byte[] b2 = getUtf8Bytes("To be or not to be.");
     static byte[] b3 = getUtf8Bytes("Question!#$%");
     static String utf01 = "\uD840\uDC40";
@@ -404,7 +409,7 @@ public class PrepStmtTest {
             prep.setDouble(4, Double.MAX_VALUE + i);
             prep.addBatch();
         }
-        assertArrayEq(prep.executeBatch(), new int[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
+        assertArrayEq(prep.executeBatch(), new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1});
         prep.close();
 
         rs = stat.executeQuery("select * from test;");
@@ -465,7 +470,7 @@ public class PrepStmtTest {
             prep.setInt(1, Integer.MIN_VALUE + i);
             prep.addBatch();
         }
-        assertArrayEq(new int[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, prep.executeBatch());
+        assertArrayEq(new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, prep.executeBatch());
         prep.close();
         ResultSet rs = stat.executeQuery("select count(*) from test;");
         assertTrue(rs.next());
@@ -480,7 +485,7 @@ public class PrepStmtTest {
         for (int i = 0; i < 10; i++) {
             prep.addBatch();
         }
-        assertArrayEq(new int[] {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, prep.executeBatch());
+        assertArrayEq(new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, prep.executeBatch());
         prep.close();
         ResultSet rs = stat.executeQuery("select count(*) from test;");
         assertTrue(rs.next());
@@ -725,6 +730,28 @@ public class PrepStmtTest {
                     SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE,
                     ((SQLiteException) e).getResultCode());
         }
+    }
+
+    /**
+     * 批量测试
+     *
+     * @throws SQLException SQL异常
+     */
+    @Test
+    public void batchPreparedStatement() throws SQLException {
+        stat.executeUpdate("create table batch (id integer)");
+        assertEquals(1, stat.executeUpdate("insert into batch values(1);"));
+        String sql = "delete from batch;insert into batch values (?);";
+        PreparedStatement batch = conn.prepareStatement(sql);
+        batch.setInt(1, 2);
+        batch.execute();
+        ResultSet rs = stat.executeQuery("select * from batch");
+        List<Integer> ids = new ArrayList<>();
+        while (rs.next()) {
+            ids.add(rs.getInt(1));
+        }
+        assertEquals(1, ids.size());
+        assertEquals(2, ids.get(0));
     }
 
     private void assertArrayEq(byte[] a, byte[] b) {

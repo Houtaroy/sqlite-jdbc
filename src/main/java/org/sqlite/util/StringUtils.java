@@ -14,4 +14,14 @@ public class StringUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * 是否为引号
+     *
+     * @param c 字符
+     * @return 判断结果
+     */
+    public static boolean isQuote(char c) {
+        return c == '"' || c == '\'';
+    }
 }

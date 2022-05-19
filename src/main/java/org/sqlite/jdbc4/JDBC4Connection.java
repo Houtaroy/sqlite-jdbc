@@ -10,8 +10,13 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLXML;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
+
+import org.sqlite.BatchPreparedStatement;
+import org.sqlite.PreparedStatementFactory;
 import org.sqlite.jdbc3.JDBC3Connection;
+import org.sqlite.util.SQLUtils;
 
 public class JDBC4Connection extends JDBC3Connection {
 
@@ -30,12 +35,14 @@ public class JDBC4Connection extends JDBC3Connection {
             throws SQLException {
         checkOpen();
         checkCursor(rst, rsc, rsh);
-
-        return new JDBC4PreparedStatement(this, sql);
+        return PreparedStatementFactory.create(this, sql);
     }
 
     // JDBC 4
-    /** @see java.sql.Connection#isClosed() */
+
+    /**
+     * @see java.sql.Connection#isClosed()
+     */
     public boolean isClosed() throws SQLException {
         return super.isClosed();
     }

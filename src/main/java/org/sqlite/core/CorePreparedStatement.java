@@ -16,13 +16,14 @@
 
 package org.sqlite.core;
 
-import java.sql.Date;
-import java.sql.SQLException;
-import java.util.Calendar;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.SQLiteConnectionConfig;
 import org.sqlite.date.FastDateFormat;
 import org.sqlite.jdbc4.JDBC4Statement;
+
+import java.sql.Date;
+import java.sql.SQLException;
+import java.util.Calendar;
 
 public abstract class CorePreparedStatement extends JDBC4Statement {
     protected int columnCount;
@@ -30,10 +31,19 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
     protected int batchQueryCount;
 
     /**
+     * 构造函数
+     *
+     * @param conn 数据库连接
+     */
+    protected CorePreparedStatement(SQLiteConnection conn) {
+        super(conn);
+    }
+
+    /**
      * Constructs a prepared statement on a provided connection.
      *
      * @param conn Connection on which to create the prepared statement.
-     * @param sql The SQL script to prepare.
+     * @param sql  The SQL script to prepare.
      * @throws SQLException
      */
     protected CorePreparedStatement(SQLiteConnection conn, String sql) throws SQLException {
@@ -50,11 +60,13 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
         batchPos = 0;
     }
 
-    /** @see org.sqlite.jdbc3.JDBC3Statement#executeBatch() */
+    /**
+     * @see org.sqlite.jdbc3.JDBC3Statement#executeBatch()
+     */
     @Override
     public int[] executeBatch() throws SQLException {
         if (batchQueryCount == 0) {
-            return new int[] {};
+            return new int[]{};
         }
 
         try {
@@ -65,14 +77,18 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
         }
     }
 
-    /** @see org.sqlite.jdbc3.JDBC3Statement#clearBatch() () */
+    /**
+     * @see org.sqlite.jdbc3.JDBC3Statement#clearBatch() ()
+     */
     @Override
     public void clearBatch() throws SQLException {
         super.clearBatch();
         batchQueryCount = 0;
     }
 
-    /** @see org.sqlite.jdbc3.JDBC3Statement#getUpdateCount() */
+    /**
+     * @see org.sqlite.jdbc3.JDBC3Statement#getUpdateCount()
+     */
     @Override
     public int getUpdateCount() throws SQLException {
         if (pointer == 0 || resultsWaiting || rs.isOpen()) {
@@ -91,7 +107,7 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
      * @param value
      * @throws SQLException
      */
-    protected void batch(int pos, Object value) throws SQLException {
+    public void batch(int pos, Object value) throws SQLException {
         checkOpen();
         if (batch == null) {
             batch = new Object[paramCount];
@@ -99,7 +115,9 @@ public abstract class CorePreparedStatement extends JDBC4Statement {
         batch[batchPos + pos - 1] = value;
     }
 
-    /** Store the date in the user's preferred format (text, int, or real) */
+    /**
+     * Store the date in the user's preferred format (text, int, or real)
+     */
     protected void setDateByMilliseconds(int pos, Long value, Calendar calendar)
             throws SQLException {
         SQLiteConnectionConfig config = conn.getConnectionConfig();

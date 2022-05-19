@@ -24,6 +24,13 @@ import org.sqlite.SQLiteConnection;
 import org.sqlite.core.CorePreparedStatement;
 
 public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
+    /**
+     * 构造函数
+     * @param connection 数据库连接
+     */
+    protected JDBC3PreparedStatement(SQLiteConnection connection) {
+        super(connection);
+    }
 
     protected JDBC3PreparedStatement(SQLiteConnection conn, String sql) throws SQLException {
         super(conn, sql);
